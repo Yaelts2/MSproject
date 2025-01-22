@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from config import DATA_PATH
-from Inspect_data import extract_data_matlab
+from inspect_data.analysis_functions1 import extract_data_matlab
 
 ##Figure 1
 # input: matlab tables that has the information i need for this figure : MS amp and MS max velocity
@@ -51,7 +51,7 @@ plt.show()
 fig, axs = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
 
 # Monkey L
-sns.regplot(x=all_ms_amp_L, y=all_max_velocity_L, ax=axs[0], scatter_kws={"alpha": 0.7}, line_kws={"color": "red"})
+sns.regplot(x=all_ms_amp_L, y=all_max_velocity_L, ax=axs[0],ci=None, scatter_kws={"alpha": 0.7}, line_kws={"color": "red"})
 axs[0].set_title("Monkey L")
 axs[0].set_xlabel("Amplitude (deg)")
 axs[0].set_ylabel("Max Velocity (deg/sec)")
@@ -59,7 +59,7 @@ axs[0].set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])
 axs[0].set_yticks([10, 20, 40, 60, 80, 100])
 
 # Scatter plot with regression for Monkey G
-sns.regplot(x=all_ms_amp_G, y=all_max_velocity_G, ax=axs[1], scatter_kws={"alpha": 0.7}, line_kws={"color": "red"})
+sns.regplot(x=all_ms_amp_G, y=all_max_velocity_G, ax=axs[1],ci=None, scatter_kws={"alpha": 0.7}, line_kws={"color": "red"})
 axs[1].set_title("Monkey G")
 axs[1].set_xlabel("Amplitude (deg)")
 axs[0].set_ylabel("Max Velocity (deg/sec)")

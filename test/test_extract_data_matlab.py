@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import os
-from my_project.Inspect_data import extract_data_matlab
+from my_project.inspect_data.analysis_functions1 import extract_data_matlab
 from scipy.io import loadmat
 
 
