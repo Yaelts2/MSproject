@@ -118,3 +118,58 @@ def extractBaseline(session_data):
             session_data[pixel_id, :, ms_id] -= baseline_mean
     
     return session_data
+
+
+def Session_vector(file_path):
+    '''
+    Processes a session file to compute the mean signal and SEM.
+
+    Parameters:
+        file_path (str): Path to the session file.
+
+    Returns:
+        tuple: Mean signal and SEM .
+    '''
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+    session_data=np.load(file_path)  #loading session data
+    if session_data.ndim != 3:
+        raise ValueError(f"Invalid session data shape: {session_data.shape}, expected a 3D array.")
+    mean_signal=np.nanmean(session_data,axis=0) #mean on all pixls , dim=1 [0],  (num_frames, num_MS)
+    sem_example= np.nanstd(mean_signal, axis=1) / np.sqrt(mean_signal.shape[1])  # Shape: (50,)
+    mean_signal=np.nanmean(mean_signal,axis=1) # mean on all MS , dim=3 [1] 
+    return (mean_signal,sem_example)
+
+def All_session (files_path,monkey):
+    '''
+    Processes all session files for a given monkey to compute the grand mean signal and SEM.
+
+    Parameters:
+        files_path (str): Path to the folder containing session `.npy` files.
+        monkey (str): Prefix for session file names ('gandalf', 'legolas').
+
+    Returns:
+        tuple: 
+            - all_session_mean (numpy.ndarray): 1D array of shape (num_time_frames,) representing 
+            the mean signal across all sessions.
+            - all_session_SEM (numpy.ndarray): 1D array of shape (num_time_frames,) representing 
+            the average SEM.
+    '''
+    npy_files = glob.glob(os.path.join(files_path, f"{monkey}*.npy"))
+    if not npy_files:
+        raise ValueError(f"No files found for monkey '{monkey}' in folder '{files_path}'")
+    mean_signals= []  #List of signals for all sessions
+    sem_signals= []   # List to store SEM signals
+    for file_path in npy_files:
+        try:
+            mean_signal, sem_signal = Session_vector(file_path)
+            mean_signals.append(mean_signal)
+            sem_signals.append(sem_signal)
+        except Exception as e:
+            print(f"Skipping file {file_path} due to error: {e}")
+    mean_signals_array = np.array(mean_signals)  # Shape: (num_sessions, 50)
+    sem_signals_array = np.array(sem_signals)    # Shape: (num_sessions, 50) 
+    all_session_mean = np.nanmean(mean_signals_array, axis=0)
+    all_session_SEM=np.nanmean(sem_signals_array,axis=0)
+    return(all_session_mean,all_session_SEM)
+
