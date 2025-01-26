@@ -2,6 +2,25 @@ import os
 import numpy as np
 from scipy.io import loadmat
 import glob
+import tkinter as tk
+
+def ask_question(question):
+    '''
+    GUI in python with package tkinter
+    gets a question and sends back the response
+    '''
+    response = None
+    def save_response(value):
+        nonlocal response
+        response = value
+        root.destroy()
+    root = tk.Tk()
+    root.title('Question')
+    tk.Label(root, text=question).pack(pady=10)
+    tk.Button(root, text='Yes', command=lambda: save_response(True)).pack(side=tk.LEFT, padx=10, pady=10)
+    tk.Button(root, text='No', command=lambda: save_response(False)).pack(side=tk.RIGHT, padx=10, pady=10)
+    root.mainloop()
+    return response
 
 
 def load_session_data(Data_path, file_name):
@@ -167,9 +186,40 @@ def All_session (files_path,monkey):
             sem_signals.append(sem_signal)
         except Exception as e:
             print(f"Skipping file {file_path} due to error: {e}")
-    mean_signals_array = np.array(mean_signals)  # Shape: (num_sessions, 50)
-    sem_signals_array = np.array(sem_signals)    # Shape: (num_sessions, 50) 
-    all_session_mean = np.nanmean(mean_signals_array, axis=0)
-    all_session_SEM=np.nanmean(sem_signals_array,axis=0)
-    return(all_session_mean,all_session_SEM)
+    
+    return(mean_signals,sem_signals)
 
+import numpy as np
+
+def calculate_means_around_indices(mean_signals, min_index, max_index):
+    """
+    Calculates the mean values of three consecutive elements (index-1, index, index+1)
+    for two given indices (min and max) in each vector in a list of mean signal vectors.
+
+    Parameters:
+        mean_signals (list of numpy.ndarray): List of 1D arrays containing mean signal vectors.
+        min_index (int): The index around which the mean for the minimum is calculated.
+        max_index (int): The index around which the mean for the maximum is calculated.
+
+    Returns:
+        tuple: 
+            - min_means (list): A list of mean values for the minimum index across all vectors.
+            - max_means (list): A list of mean values for the maximum index across all vectors.
+    """
+    min_means = []
+    max_means = []
+
+    for vector in mean_signals:
+        # Calculate mean around the min_index
+        if min_index - 1 >= 0 and min_index + 1 < len(vector):
+            min_mean = np.mean(vector[min_index - 1:min_index + 2])
+        else:
+            min_mean = np.nan  
+        min_means.append(min_mean)
+        # Calculate mean around the max_index
+        if max_index - 1 >= 0 and max_index + 1 < len(vector):
+            max_mean = np.mean(vector[max_index - 1:max_index + 2])
+        else:
+            max_mean = np.nan  
+        max_means.append(max_mean)
+    return min_means, max_means
