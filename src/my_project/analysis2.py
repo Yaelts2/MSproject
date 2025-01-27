@@ -153,7 +153,9 @@ axs[1].legend()
 plt.tight_layout()
 plt.show()
 
-##Figure 2 D
+
+##Figure 2 D and H
+#calculating the min amd max ind for min, max time and min,max amp 
 #monkey G
 min_idx_G=np.argmin(all_session_mean_G)
 min_time_G=time_G[min_idx_G]
@@ -166,61 +168,41 @@ max_idx_L=np.argmax(all_session_mean_L)
 max_time_L=time_L[max_idx_L]
 
 
-#calculting the avg amp of the signal for every session 
-min_amp_G,max_amp_G=calculate_means_around_indices(mean_signals_G,min_idx_G,max_idx_G) # 2 lists of mean amp in min and in max for monkey G
-min_amp_L,max_amp_L=calculate_means_around_indices(mean_signals_L,min_idx_L,max_idx_L)# 2 lists of mean amp in min and in max for monkey L
+#calculating the avg amp of the signal for every session 
+#This function calculates the mean amp of three idx around suppression and enhancement peak amplitude for every session
+#returns the mean value of all sessions
+min_amp_G_mean,max_amp_G_mean,min_amp_G_sem,max_amp_G_sem=calculate_means_around_indices(mean_signals_G,min_idx_G,max_idx_G) # 2 lists of mean amp in min and in max for monkey G
+min_amp_L_mean,max_amp_L_mean,min_amp_L_sem,max_amp_L_sem=calculate_means_around_indices(mean_signals_L,min_idx_L,max_idx_L)# 2 lists of mean amp in min and in max for monkey L
 
 
-
-
-
-
-# Example data (replace these with your actual calculated values)
-# Monkey G
-min_amp_G_mean = np.nanmean(min_amp_G)  # Mean suppression amplitude
-max_amp_G_mean = np.nanmean(max_amp_G)  # Mean enhancement amplitude
-
-# Monkey L
-min_amp_L_mean = np.nanmean(min_amp_L)  # Mean suppression amplitude
-max_amp_L_mean = np.nanmean(max_amp_L)  # Mean enhancement amplitude
-print(max_amp_L_mean, min_amp_L_mean)
-# Time to peak (replace with your actual `min_time_G`, `max_time_G`, etc.)
-min_time_G_mean, max_time_G_mean = min_time_G, max_time_G
-min_time_L_mean, max_time_L_mean = min_time_L, max_time_L
-
-# Data for plotting
+## Data for plotting
 categories = ["supp.", "enha."]
 # Amplitudes
 amplitudes_G = [min_amp_G_mean, max_amp_G_mean]
-amplitudes_L = [min_amp_L, max_amp_L]
+errors_amp_G = [min_amp_G_sem, max_amp_G_sem]
+amplitudes_L = [min_amp_L_mean, max_amp_L_mean]
+errors_amp_L = [min_amp_L_sem, max_amp_L_sem]
+
+print("monkey L amp: ",amplitudes_L,"\nmonkey G amp: ", amplitudes_G)
 # Times
-times_G = [min_time_G_mean, max_time_G_mean]
-times_L = [min_time_L_mean, max_time_L_mean]
+times_G = [min_time_G, max_time_G]
+times_L = [min_time_L, max_time_L]
+print("monkey L time: ",times_L,"\nmonkey G time: ", times_G)
 
 fig, axs = plt.subplots(1, 2, figsize=(12, 6))
-
 # Left plot: Amplitude Δf/f
-axs[0].bar(categories, amplitudes_L, color=["darkgray", "lightgray"])
-axs[0].axhline(0, color="black", linewidth=0.8)  # Zero line
+axs[0].bar(categories, amplitudes_L, yerr=errors_amp_L, color=["dimgray", "silver"])
 axs[0].set_ylabel("Amplitude Δf/f (x10^-4)", fontsize=14)
-axs[0].set_ylim([-2, 3])  # Adjust as needed based on your data
+axs[0].axhline(0, color="black", linewidth=0.8)  # Zero line
+axs[0].set_yticks([-0.0001,0,0.0001,0.0002])
+axs[0].set_yticklabels(['-1','0','1','2']) 
 axs[0].set_title("Suppression and Enhancement Amplitudes (Monkey L)", fontsize=14)
-
-# Add significance markers (adjust positions manually)
-axs[0].text(0.5, 2.2, "***", ha="center", fontsize=14)
-axs[0].text(0, -1.5, "*", ha="center", fontsize=12)
-axs[0].text(1, 2.5, "*", ha="center", fontsize=12)
 
 # Right plot: Time to Peak
 axs[1].bar(categories, times_L, color=["darkgray", "lightgray"])
 axs[1].set_ylabel("Time to Peak (ms)", fontsize=14)
-axs[1].set_ylim([0, 250])  # Adjust as needed based on your data
+axs[1].set_ylim([0, 250])  
 axs[1].set_title("Time to Peak (Monkey L)", fontsize=14)
-
-# Add significance markers (adjust positions manually)
-axs[1].text(0.5, 220, "***", ha="center", fontsize=14)
-axs[1].text(0, 60, "*", ha="center", fontsize=12)
-axs[1].text(1, 190, "*", ha="center", fontsize=12)
 
 # Adjust layout
 plt.tight_layout()

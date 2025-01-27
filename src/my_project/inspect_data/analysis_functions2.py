@@ -222,4 +222,8 @@ def calculate_means_around_indices(mean_signals, min_index, max_index):
         else:
             max_mean = np.nan  
         max_means.append(max_mean)
-    return min_means, max_means
+    min_amp_mean = np.nanmean(min_means)  # Mean suppression amplitude
+    max_amp_mean = np.nanmean(max_means)  # Mean enhancement amplitude
+    min_amp_sem=np.nanstd(min_means)/np.sqrt(len(min_means))
+    max_amp_sem=np.nanstd(max_means)/np.sqrt(len(max_means))
+    return min_amp_mean, max_amp_mean,min_amp_sem,max_amp_sem
