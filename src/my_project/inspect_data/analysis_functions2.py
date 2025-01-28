@@ -3,6 +3,7 @@ import numpy as np
 from scipy.io import loadmat
 import glob
 import tkinter as tk
+from scipy.stats import wilcoxon
 
 def ask_question(question):
     '''
@@ -193,37 +194,72 @@ import numpy as np
 
 def calculate_means_around_indices(mean_signals, min_index, max_index):
     """
-    Calculates the mean values of three consecutive elements (index-1, index, index+1)
-    for two given indices (min and max) in each vector in a list of mean signal vectors.
-
+    Calculates mean values of three consecutive elements (index-1, index, index+1) 
+    for specified indices (min and max) across multiple signal vectors.
+    
     Parameters:
         mean_signals (list of numpy.ndarray): List of 1D arrays containing mean signal vectors.
-        min_index (int): The index around which the mean for the minimum is calculated.
-        max_index (int): The index around which the mean for the maximum is calculated.
-
+        min_index (int): Index for calculating means around the minimum point.
+        max_index (int): Index for calculating means around the maximum point.
+    
     Returns:
         tuple: 
-            - min_means (list): A list of mean values for the minimum index across all vectors.
-            - max_means (list): A list of mean values for the maximum index across all vectors.
+            - min_results (list): Contains [list of individual means, overall mean, SEM, signed-rank test result] for the minimum index.
+            - max_results (list): Contains [list of individual means, overall mean, SEM, signed-rank test result] for the maximum index.
     """
-    min_means = []
-    max_means = []
-
+    min_values = []
+    max_values = []
     for vector in mean_signals:
-        # Calculate mean around the min_index
+        # Mean around the min_index
         if min_index - 1 >= 0 and min_index + 1 < len(vector):
             min_mean = np.mean(vector[min_index - 1:min_index + 2])
         else:
-            min_mean = np.nan  
-        min_means.append(min_mean)
-        # Calculate mean around the max_index
+            min_mean = np.nan  # Assign NaN if indices are out of bounds
+        min_values.append(min_mean)
+        
+        # Mean around the max_index
         if max_index - 1 >= 0 and max_index + 1 < len(vector):
             max_mean = np.mean(vector[max_index - 1:max_index + 2])
         else:
-            max_mean = np.nan  
-        max_means.append(max_mean)
-    min_amp_mean = np.nanmean(min_means)  # Mean suppression amplitude
-    max_amp_mean = np.nanmean(max_means)  # Mean enhancement amplitude
-    min_amp_sem=np.nanstd(min_means)/np.sqrt(len(min_means))
-    max_amp_sem=np.nanstd(max_means)/np.sqrt(len(max_means))
-    return min_amp_mean, max_amp_mean,min_amp_sem,max_amp_sem
+            max_mean = np.nan  # Assign NaN if indices are out of bounds
+        max_values.append(max_mean)
+    # Calculate overall statistics for min values
+    min_mean_overall = np.nanmean(min_values)  # Mean across all sessions
+    min_sem = np.nanstd(min_values) / np.sqrt(len(min_values))  # Standard Error of Mean (SEM)
+    min_rank_test = wilcoxon(min_values, alternative='two-sided')  # Signed-rank test
+    # Compile results for min index
+    min_results = [min_values, min_mean_overall, min_sem, min_rank_test]
+    # Calculate overall statistics for max values
+    max_mean_overall = np.nanmean(max_values)
+    max_sem = np.nanstd(max_values) / np.sqrt(len(max_values))
+    max_rank_test = wilcoxon(max_values, alternative='two-sided')
+    # Compile results for max index
+    max_results = [max_values, max_mean_overall, max_sem, max_rank_test]
+    return min_results, max_results
+
+
+
+
+
+def min_max_times(mean_signals,time_V):
+    min_times=[]
+    max_times=[]
+    for vector in mean_signals:
+        min_idx = np.argmin(vector)  # Fix: Apply to each vector
+        max_idx = np.argmax(vector)
+        min_times.append(time_V[min_idx])
+        max_times.append(time_V[max_idx])
+    min_times = np.array(min_times)
+    max_times = np.array(max_times)
+    #compute mean and SEM and sighed rank test
+    min_mean=np.nanmean(min_times)
+    min_sem = np.nanstd(min_times) / np.sqrt(len(min_times))
+    s_test_min=wilcoxon(min_times, alternative="two-sided")
+    min_results=[min_times,min_mean,min_sem,s_test_min]
+    ##min_results: list of all times , mean , sem , signed rank test
+    max_mean=np.nanmean(max_times)
+    max_sem=np.nanstd(max_times)/np.sqrt(len(max_times))
+    s_test_max=wilcoxon(max_times, alternative="two-sided")
+    max_results=[max_times,max_mean,max_sem,s_test_max]
+    #max_results: list of all times , mean , sem , signed rank test
+    return(min_results,max_results)

@@ -31,19 +31,21 @@ all_max_velocity_G = np.concatenate(all_max_velocity_G)
 
 
 # Figure 1B:
-fig, axs = plt.subplots(1, 2, figsize=(10, 5), sharey=True)
+fig, axs = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
 
 # Histogram for Monkey L
-axs[0].hist(all_ms_amp_L, bins=18, edgecolor="black", color="gray")
-axs[0].set_title("Monkey L")
-axs[0].set_xlabel("Amplitude (deg)")
-axs[0].set_ylabel("Percentage (%)")
+sns.histplot(all_ms_amp_L, bins=18,kde=False,color="gray",edgecolor="black",stat="percent",ax=axs[0])
+axs[0].set_title("Monkey L", fontsize=14)
+axs[0].set_xlabel("Amplitude (deg)", fontsize=12)
+axs[0].set_ylabel("Percentage (%)", fontsize=12)
+axs[0].set_ylim(0, 25)  
 
 # Histogram for Monkey G
-axs[1].hist(all_ms_amp_G, bins=18, edgecolor="black", color="gray")
-axs[1].set_title("Monkey G")
-axs[1].set_xlabel("Amplitude (deg)")
-
+sns.histplot(all_ms_amp_G,bins=18,kde=False,color="gray",edgecolor="black",stat="percent",ax=axs[1])
+axs[1].set_title("Monkey G", fontsize=14)
+axs[1].set_xlabel("Amplitude (deg)", fontsize=12)
+axs[1].set_ylabel("Percentage (%)", fontsize=12)
+axs[1].set_ylim(0, 25)  
 plt.tight_layout()
 plt.show()
 
@@ -62,9 +64,9 @@ axs[0].set_yticks([10, 20, 40, 60, 80, 100])
 sns.regplot(x=all_ms_amp_G, y=all_max_velocity_G, ax=axs[1],ci=None, scatter_kws={"alpha": 0.7}, line_kws={"color": "red"})
 axs[1].set_title("Monkey G")
 axs[1].set_xlabel("Amplitude (deg)")
-axs[0].set_ylabel("Max Velocity (deg/sec)")
-axs[0].set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])  # Replace with desired x-tick values
-axs[0].set_yticks([10, 20, 40, 60, 80, 100])
+axs[1].set_ylabel("Max Velocity (deg/sec)")
+axs[1].set_xticks([0.2, 0.4, 0.6, 0.8, 1.0])  # Replace with desired x-tick values
+axs[1].set_yticks([10, 20, 40, 60, 80, 100])
 
 plt.tight_layout()
 plt.show()
