@@ -4,6 +4,8 @@ from scipy.io import loadmat
 import glob
 import tkinter as tk
 from scipy.stats import wilcoxon
+from scipy.stats import ranksums
+
 
 def ask_question(question):
     '''
@@ -75,41 +77,39 @@ def extract_wrong_pix(Data_path, mask_path, mask_type, output_folder):
         os.makedirs(output_folder)
 
     # Iterate over session files
-    files_dir = glob.glob(os.path.join(Data_path, "*no_BV.mat"))
-    for file_name in files_dir:
-        count_processed += 1
-        session_data = load_session_data(Data_path, file_name)
-        session_number = file_name[0:-18]  # Extract session identifier
+    for file_name in os.listdir(Data_path):
+        if 'no_BV' in file_name:
+            count_processed += 1
+            session_data = load_session_data(Data_path, file_name)
+            session_number = file_name[0:-19]  # Extract session identifier
 
-        # Check for matrix_key
-        matrix_key = 'dataByMs_no_BV'
-        if matrix_key not in session_data:
-            print(f"Key {matrix_key} not found in session data.")
-            continue
+            # Check for matrix_key
+            matrix_key = 'dataByMs_no_BV'
+            if matrix_key not in session_data:
+                print(f"Key {matrix_key} not found in session data.")
+                continue
+            matrix = session_data[matrix_key]
+            # Iterate over mask files
+            for file_mask_name in os.listdir(mask_path):
+                if file_mask_name.startswith(session_number) and file_mask_name.endswith(mask_type):
+                    mask_file_path = os.path.join(mask_path, file_mask_name)
+                    vector_key = file_mask_name[0:-4]
 
-        matrix = session_data[matrix_key]
+                    indices_to_modify = process_mask_file(mask_file_path, vector_key)
+                    if indices_to_modify is None:
+                        print("No indices to modify were found. Exiting the function.")
+                        return None
 
-        # Iterate over mask files
-        for file_mask_name in os.listdir(mask_path):
-            if file_mask_name.startswith(session_number) and file_mask_name.endswith(mask_type):
-                mask_file_path = os.path.join(mask_path, file_mask_name)
-                vector_key = file_mask_name[0:-4]
-
-                indices_to_modify = process_mask_file(mask_file_path, vector_key)
-                if indices_to_modify is None:
-                    print("No indices to modify were found. Exiting the function.")
-                    return None
-
-                # Modify the matrix
-                for idx in indices_to_modify:
-                    matrix[idx, :, :] = np.nan
-                        
-                        
-                # Save modified matrix
-                output_file = os.path.join(output_folder, f"{session_number}_modified.npy")
-                if save_modified_matrix(matrix, output_file):
-                    count_modified += 1
-                break  # Exit the loop after processing the matching mask file
+                    # Modify the matrix
+                    for idx in indices_to_modify:
+                        matrix[idx, :, :] = np.nan
+                            
+                            
+                    # Save modified matrix
+                    output_file = os.path.join(output_folder, f"{session_number}_modified.npy")
+                    if save_modified_matrix(matrix, output_file):
+                        count_modified += 1
+                    break  # Exit the loop after processing the matching mask file
     return {"processed_files": count_processed, "modified_files": count_modified}
 
 
@@ -140,6 +140,60 @@ def extractBaseline(session_data):
     return session_data
 
 
+def adding_shuffled(path_shuffle,type,session_data,monkey):
+    """
+    Computes rank-sum significance and returns shuffled mean vector + SEM.
+    Parameters:
+        path_shuffle (str): Path to directory containing shuffle data files.
+        type (str): Filter for selecting specific files.
+        session_data (numpy array): (timeFrame x MS) matrix.
+        monkey (str): Filter for selecting specific monkey data.
+    Returns:
+        significant_indices (numpy array): Array of significant time frames.
+        (shuffled_vector, shuffled_sem) (tuple): Mean and SEM of shuffle data.
+    """
+    significant_indices=[]
+    for file_name in os.listdir(path_shuffle):
+        if monkey in file_name and type in file_name:
+            file_path = os.path.join(path_shuffle, file_name)
+            shuffle=loadmat(file_path)
+            shuffle=next(reversed(shuffle.values())) #shuffled data (1020x50)=(fakeMS x timeFrame)
+            num_time_frames = shuffle.shape[1]  # Number of time frames
+            for t in range(15,num_time_frames-10):
+                # Extract time frame `t`
+                shuffle_t = shuffle[:,t]  # (fakeMS,)
+                session_t = session_data[t, :]  # Mean across pixels for each time frame (MS,)
+                # Perform rank-sum test
+                _ , p_value = ranksums(shuffle_t, session_t)
+                # Store significant time frames
+                if p_value < 0.05:
+                    significant_indices.append(t)
+    shuffled_vector = np.nanmean(shuffle, axis=0)
+    shuffled_sem = np.nanstd(shuffle, axis=0) / np.sqrt(shuffle.shape[0])  # SEM
+    return np.array(significant_indices),(shuffled_vector, shuffled_sem)
+
+
+
+def create_grand_matrix(data_path,monkey):
+    grand_G=[]
+    for file_name in os.listdir(data_path):
+        if file_name.endswith(".npy") and file_name.startswith(monkey): 
+            file_path = os.path.join(data_path, file_name)
+            try:
+                data = np.load(file_path, allow_pickle=False)
+                if data.ndim != 3:
+                    print(f"Warning: Skipping {file_name}, expected 3D but got {data.shape}")
+                    continue
+                grand_G.append(data)
+            except Exception as e:
+                print(f"Error loading {file_name}: {e}")
+                continue 
+    grand_G = np.concatenate(grand_G, axis=2)  # Shape: (pix, timeFrame, total_MS)    
+    return grand_G
+
+    
+    
+    
 def Session_vector(file_path):
     '''
     Processes a session file to compute the mean signal and SEM.
@@ -160,6 +214,8 @@ def Session_vector(file_path):
     mean_signal=np.nanmean(mean_signal,axis=1) # mean on all MS , dim=3 [1] 
     return (mean_signal,sem_example)
 
+
+
 def All_session (files_path,monkey):
     '''
     Processes all session files for a given monkey to compute the grand mean signal and SEM.
@@ -170,10 +226,8 @@ def All_session (files_path,monkey):
 
     Returns:
         tuple: 
-            - all_session_mean (numpy.ndarray): 1D array of shape (num_time_frames,) representing 
-            the mean signal across all sessions.
-            - all_session_SEM (numpy.ndarray): 1D array of shape (num_time_frames,) representing 
-            the average SEM.
+            -mean_signals- list of all mean vectors to every session
+            -sem_signals- "" "" "" "" sem "" "" "" ""
     '''
     npy_files = glob.glob(os.path.join(files_path, f"{monkey}*.npy"))
     if not npy_files:
@@ -187,7 +241,6 @@ def All_session (files_path,monkey):
             sem_signals.append(sem_signal)
         except Exception as e:
             print(f"Skipping file {file_path} due to error: {e}")
-    
     return(mean_signals,sem_signals)
 
 import numpy as np
@@ -212,14 +265,14 @@ def calculate_means_around_indices(mean_signals, min_index, max_index):
     for vector in mean_signals:
         # Mean around the min_index
         if min_index - 1 >= 0 and min_index + 1 < len(vector):
-            min_mean = np.mean(vector[min_index - 1:min_index + 2])
+            min_mean = np.mean(vector[min_index - 1:min_index + 1])
         else:
             min_mean = np.nan  # Assign NaN if indices are out of bounds
         min_values.append(min_mean)
         
         # Mean around the max_index
         if max_index - 1 >= 0 and max_index + 1 < len(vector):
-            max_mean = np.mean(vector[max_index - 1:max_index + 2])
+            max_mean = np.mean(vector[max_index - 1:max_index + 1])
         else:
             max_mean = np.nan  # Assign NaN if indices are out of bounds
         max_values.append(max_mean)
@@ -245,8 +298,9 @@ def min_max_times(mean_signals,time_V):
     min_times=[]
     max_times=[]
     for vector in mean_signals:
-        min_idx = np.argmin(vector)  # Fix: Apply to each vector
-        max_idx = np.argmax(vector)
+        sliced_vector = vector[15:35]  # Slice the vector (from MS onset to 150ms later)
+        min_idx = np.argmin(sliced_vector) + 15  
+        max_idx = np.argmax(sliced_vector) + 15  
         min_times.append(time_V[min_idx])
         max_times.append(time_V[max_idx])
     min_times = np.array(min_times)
