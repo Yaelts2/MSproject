@@ -7,7 +7,7 @@ from scipy.stats import wilcoxon
 from scipy.stats import ranksums
 
 
-def ask_question(question):
+def ask_question(question,option1,option2):
     '''
     GUI in python with package tkinter
     gets a question and sends back the response
@@ -20,8 +20,8 @@ def ask_question(question):
     root = tk.Tk()
     root.title('Question')
     tk.Label(root, text=question).pack(pady=10)
-    tk.Button(root, text='Yes', command=lambda: save_response(True)).pack(side=tk.LEFT, padx=10, pady=10)
-    tk.Button(root, text='No', command=lambda: save_response(False)).pack(side=tk.RIGHT, padx=10, pady=10)
+    tk.Button(root, text=option1, command=lambda: save_response(option1)).pack(side=tk.LEFT, padx=10, pady=10)
+    tk.Button(root, text=option2, command=lambda: save_response(option2)).pack(side=tk.RIGHT, padx=10, pady=10)
     root.mainloop()
     return response
 
@@ -173,25 +173,6 @@ def adding_shuffled(path_shuffle,type,session_data,monkey):
     return np.array(significant_indices),(shuffled_vector, shuffled_sem)
 
 
-
-def create_grand_matrix(data_path,monkey):
-    grand_G=[]
-    for file_name in os.listdir(data_path):
-        if file_name.endswith(".npy") and file_name.startswith(monkey): 
-            file_path = os.path.join(data_path, file_name)
-            try:
-                data = np.load(file_path, allow_pickle=False)
-                if data.ndim != 3:
-                    print(f"Warning: Skipping {file_name}, expected 3D but got {data.shape}")
-                    continue
-                grand_G.append(data)
-            except Exception as e:
-                print(f"Error loading {file_name}: {e}")
-                continue 
-    grand_G = np.concatenate(grand_G, axis=2)  # Shape: (pix, timeFrame, total_MS)    
-    return grand_G
-
-    
     
     
 def Session_vector(file_path):
