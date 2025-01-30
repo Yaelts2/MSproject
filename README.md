@@ -13,12 +13,14 @@
 ## **Installation**
 
 *Clone the Repository:*
-```bash 
+
+```bash
 git clone <repository_url>
 cd MSProject
 ```
 
 *Set Up a Virtual Environment:*
+
 ```bash
 pip install virtualenv
 # create virtual environment (serve only this project):
@@ -30,6 +32,7 @@ python.exe -m pip install --upgrade pip
 ```
 
 *install projects packages*
+
 ```bash
 pip install -e .
 # install dev packages (Additional packages for linting, testing and other developer tools)
@@ -37,6 +40,9 @@ pip install -e .[dev]
 ```
 
 ## **Testing**
+
 ```bash
 pytest -v
 ```
+
+## **Opertin**

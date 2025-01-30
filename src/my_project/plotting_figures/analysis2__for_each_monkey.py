@@ -1,6 +1,6 @@
 import os
-from inspect_data.analysis_functions2 import extract_wrong_pix, extractBaseline, Session_vector, All_session
-from inspect_data.analysis_functions2 import ask_question,calculate_means_around_indices,min_max_times,adding_shuffled
+from inspect_data.analysis_functions2 import  Session_vector, All_session,calculate_means_around_indices,min_max_times,adding_shuffled
+from my_project.inspect_data.preprocessing_functions import ask_question
 from config import DATA_PATH
 import numpy as np
 import glob
