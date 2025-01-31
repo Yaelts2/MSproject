@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from my_project.config import DATA_PATH
-from my_project.Inspect_data.analysis_functions1 import extract_data_matlab
+from my_project.inspect_data.analysis_functions1 import extract_data_matlab
 from scipy.stats import pearsonr,sem
 
 

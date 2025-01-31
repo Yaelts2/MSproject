@@ -1,6 +1,6 @@
 import os
-from my_project.inspect_data.preprocessing_functions import extract_wrong_pix, extractBaseline,ask_question
-from config import DATA_PATH
+from my_project.inspect_data.preprocessing_functions import extract_wrong_pix, extractBaseline, ask_question
+from my_project.config import DATA_PATH
 import numpy as np
 import glob
 import logging

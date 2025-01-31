@@ -1,7 +1,7 @@
 import os
-from inspect_data.analysis_functions2 import  Session_vector, All_session,calculate_means_around_indices,min_max_times,adding_shuffled
+from my_project.inspect_data.analysis_functions2 import  Session_vector, All_session,calculate_means_around_indices,min_max_times,adding_shuffled
 from my_project.inspect_data.preprocessing_functions import ask_question
-from config import DATA_PATH
+from my_project.config import DATA_PATH
 import numpy as np
 import glob
 import logging
@@ -38,9 +38,9 @@ grand_significant_indices,grand_shuffled_vector=adding_shuffled(shuffle_path,'Gr
 
 #Time course of the VSD signal for the example session
 if monkey=='gandalf':
-    file_path = "C:\myprojects\data\output/gandalf_240718united_modified.npy"
+    file_path = "C:\myprojects\data\output\gandalf_240718united_modified.npy"
 else: #monkey='legolas'
-    file_path="C:\myprojects\data\output/legolas_111108united_modified.npy"
+    file_path="C:\myprojects\data\output\legolas_111108united_modified.npy"
 mean_signal,sem_example=Session_vector(file_path)
 ##adding shuffle
 session_data =np.load(file_path) #session data (10000x50x60)=(pix x timeFrame x MS)
@@ -55,15 +55,10 @@ for ax in axs:
     ax.spines['right'].set_visible(False)
     ax.axvline(0, color="black", linestyle="--", linewidth=0.8)  # Dashed vertical line at x=0
     ax.axhline(0, color="black", linestyle="--", linewidth=0.8)  # Zero line
-# Example Session 
+# Example Session and SEM
 axs[0].plot(time, mean_signal, label="Example Session", color="green", linewidth=2)
 axs[0].fill_between(time, mean_signal - sem_example, mean_signal + sem_example, color="green", alpha=0.2, label="±1 SEM")
-axs[0].set_title(f"Example Session ({monkey})",fontsize=16)
-axs[0].set_xlabel("Time from MS onset (ms)",fontsize=14)
-axs[0].set_ylabel("Amplitude Δf/f (x10^-4)",fontsize=14)
-axs[0].set_yticks([-0.0002,0,0.0002,0.0004])
-axs[0].set_yticklabels(['-2','0','2','4'])
-# Add Shuffle Vector
+# Add Shuffle Vector and SEM
 axs[0].plot(time, shuffled_vector[0], label="Shuffle", color="black", linestyle="--", linewidth=1)
 axs[0].fill_between(time,shuffled_vector[0] - shuffled_vector[1], 
     shuffled_vector[0] + shuffled_vector[1], 
@@ -71,17 +66,22 @@ axs[0].fill_between(time,shuffled_vector[0] - shuffled_vector[1],
     label="Shuffle ± SEM")
 # Add * Markers for Significant Frames
 axs[0].scatter(time[significant_indices],[0.00035]*len(significant_indices) , color="red", marker="*", s=80, label="Significant")
+#figure:
+axs[0].set_title(f"Example Session ({monkey})",fontsize=25)
+axs[0].set_xlabel("Time from MS onset (ms)",fontsize=20)
+axs[0].set_ylabel("Amplitude Δf/f (x10^-4)",fontsize=20)
+#for better visualization for monkey G use this y thicks:
+# axs[0].set_yticks([-0.0001,0,0.0001])
+# axs[0].set_yticklabels(['-1','0','1'],fontsize=14)
+#better for monkey L:
+axs[0].set_yticks([-0.0002,0,0.0002,0.0004])
+axs[0].set_yticklabels(['-2','0','2','4'],fontsize=14)
 axs[0].legend()
 
-#Grand Analysis (Monkey L)
+#Grand Analysis and SEM
 axs[1].plot(time, all_session_mean, label="Grand Analysis", color="blue", linewidth=2)
 axs[1].fill_between(time, all_session_mean - all_session_SEM , all_session_mean + all_session_SEM, color="blue", alpha=0.2, label="±1 SEM")
-axs[1].set_title(f"Grand Analysis ({monkey})",fontsize=16)
-axs[1].set_xlabel("Time from MS onset (ms)",fontsize=14)
-axs[1].set_ylabel("Amplitude Δf/f (x10^-4)",fontsize=14)
-axs[1].set_yticks([-0.0001,0,0.0001,0.0002])
-axs[1].set_yticklabels(['-1','0','1','2'])
-# Add Shuffle Vector
+# Add Shuffle Vector and SEM
 axs[1].plot(time, grand_shuffled_vector[0], label="Shuffle", color="black", linestyle="--", linewidth=1)
 axs[1].fill_between(time,grand_shuffled_vector[0] - grand_shuffled_vector[1], 
     grand_shuffled_vector[0] + grand_shuffled_vector[1], 
@@ -89,6 +89,15 @@ axs[1].fill_between(time,grand_shuffled_vector[0] - grand_shuffled_vector[1],
     label="Shuffle ± SEM")
 # Add * Markers for Significant Frames
 axs[1].scatter(time[grand_significant_indices],[0.00025]*len(grand_significant_indices) , color="red", marker="*", s=80, label="Significant")
+axs[1].set_title(f"Grand Analysis ({monkey})",fontsize=25)
+axs[1].set_xlabel("Time from MS onset (ms)",fontsize=20)
+axs[1].set_ylabel("Amplitude Δf/f (x10^-4)",fontsize=20)
+#for better visualization for monkey G use this y thicks:
+# axs[1].set_yticks([-0.0001,0,0.0001])
+# axs[1].set_yticklabels(['-1','0','1'],fontsize=14)
+#better for monkey L:
+axs[1].set_yticks([-0.0001,0,0.0001,0.0002])
+axs[1].set_yticklabels(['-1','0','1','2'],fontsize=14)
 axs[1].legend()
 plt.tight_layout()
 
@@ -118,15 +127,15 @@ errors_time=[min_time[2],max_time[2]]
 
 
 ##ploting figure D, H
-#monkey L
 fig, axs = plt.subplots(1, 2, figsize=(12, 10))
 # Left plot: Amplitude Δf/f
 axs[0].bar(categories, amplitudes, yerr=errors_amp, color=["dimgray", "silver"])
-axs[0].set_ylabel("Amplitude Δf/f (x10^-4)", fontsize=14)
+axs[0].tick_params(axis='both', labelsize=20)  
+axs[0].set_ylabel("Amplitude Δf/f (x10^-4)", fontsize=20)
 axs[0].axhline(0, color="black", linewidth=0.8)  # Zero line
 axs[0].set_yticks([-0.0001,0,0.0001,0.0002,0.0003])
-axs[0].set_yticklabels(['-1','0','1','2','3']) 
-axs[0].set_title(f"Suppression and Enhancement Amplitudes ({monkey})", fontsize=14)
+axs[0].set_yticklabels(['-1','0','1','2','3'],fontsize=14) 
+axs[0].set_title(f"Suppression and Enhancement Amplitudes ({monkey})", fontsize=25)
 
 if min_amp[3][1] < 0.05:  # Check p-value for amplitude
     axs[0].text(0.03, 0.0002, "*", ha="center", fontsize=20)
@@ -140,9 +149,10 @@ if RS_amp[1]<0.005:
 
 # Right plot: Time to Peak
 axs[1].bar(categories, times,yerr=errors_time , color=["dimgray", "silver"])
+axs[1].tick_params(axis='both', labelsize=20)  
 axs[1].set_ylabel("Time to Peak (ms)", fontsize=20)
 axs[1].set_ylim([0, 300])  
-axs[1].set_title(f"Time to Peak ({monkey})", fontsize=20)
+axs[1].set_title(f"Time to Peak ({monkey})", fontsize=25)
 
 if min_time[3][1] < 0.05:  # Check p-value for amplitude
     axs[1].text(0.03,200, "*", ha="center", fontsize=20)
