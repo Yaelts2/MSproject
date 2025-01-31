@@ -3,7 +3,6 @@ from my_project.inspect_data.preprocessing_functions import extract_wrong_pix, e
 from my_project.config import DATA_PATH
 import numpy as np
 import glob
-import logging
 import matplotlib.pyplot as plt
 import tkinter as tk
 from scipy.stats import wilcoxon

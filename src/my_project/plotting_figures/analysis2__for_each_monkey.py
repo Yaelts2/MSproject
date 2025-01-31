@@ -4,11 +4,9 @@ from my_project.inspect_data.preprocessing_functions import ask_question
 from my_project.config import DATA_PATH
 import numpy as np
 import glob
-import logging
 import matplotlib.pyplot as plt
 import tkinter as tk
-from scipy.stats import wilcoxon
-from scipy.stats import ranksums
+from scipy.stats import wilcoxon,ranksums
 import pandas as pd
 
 '''

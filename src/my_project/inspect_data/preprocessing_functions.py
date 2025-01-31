@@ -3,9 +3,7 @@ import numpy as np
 from scipy.io import loadmat
 import glob
 import tkinter as tk
-from scipy.stats import wilcoxon
-from scipy.stats import ranksums
-
+from scipy.stats import wilcoxon,ranksums
 
 
 
