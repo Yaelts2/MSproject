@@ -19,14 +19,14 @@ MSproject/
 │   ├── my_project/                   
 │   │   ├── inspect_data/              
 │   │   │   ├── __init__.py
-│   │   │   ├── analysis_functions1.py
-│   │   │   ├── analysis_functions2.py
-│   │   │   ├── preprocessing.py       
+│   │   │   ├── afterMSactivity_functions.py
+│   │   │   ├── afterMSactivity_functions.py
+│   │   │   ├── preprocessing_functions.py       
 │   │   │
 │   │   ├── plotting_figures/          
 │   │   │   ├── __init__.py
-│   │   │   ├── analysis1.py
-│   │   │   ├── analysis2_for_each_monkey.py
+│   │   │   ├── MScharacteristics.py
+│   │   │   ├── afterMSactivity.py
 │   │   │   ├── check_preprocessing.py  
 
 │   │   │   ├── preprocessing_data.py

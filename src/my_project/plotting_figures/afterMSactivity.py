@@ -1,5 +1,5 @@
 import os
-from my_project.inspect_data.analysis_functions2 import  Session_vector, All_session,calculate_means_around_indices,min_max_times,adding_shuffled
+from my_project.inspect_data.afterMSactivity_functions import  Session_vector, All_session,calculate_means_around_indices,min_max_times,adding_shuffled
 from my_project.inspect_data.preprocessing_functions import ask_question
 from my_project.config import DATA_PATH
 import numpy as np

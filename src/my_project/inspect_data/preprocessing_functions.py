@@ -32,7 +32,14 @@ def load_session_data(Data_path, file_name):
     return loadmat(file_path)
 
 def process_mask_file(mask_file_path, vector_key):
-    """Load mask data and return the indices to modify based on the vector."""
+    """
+    Load mask data and return the indices to modify based on the vector.
+    parameters: 
+        -mask file path : path to find the relevant mask file and load it.
+        - vector key : to extract the data from the matlab file.
+    returns : 
+        a vector with the index of the pixels that needs to be removed. 
+    """
     mask_data = loadmat(mask_file_path)
     if vector_key not in mask_data:
         print(f"Key {vector_key} not found in the mask file.")
